@@ -24,16 +24,26 @@ def K_const_prime(z):
     return 0
 
 #Function for performing a single random step on all particles
-def random_step(z, dt, K, K_prime, L):
+def random_step(z, dt, K, K_prime, L, simple = True):
     dW = rand.normal(0, np.sqrt(dt), len(z))
     z_temp = z + K_prime(z) * dt + np.sqrt(2 * K(z)) * dW
     #Simple reflection scheme
-    z_temp = np.where(z_temp < 0, -z_temp, z_temp)
-    z_temp = np.where(z_temp > L, 2 * L - z_temp, z_temp)
+    if simple:
+        z_temp = np.where(z_temp < 0, -z_temp, z_temp)
+        z_temp = np.where(z_temp > L, 2 * L - z_temp, z_temp)
+    #Lépingle reflection
+    else:
+        Vn = rand.exponential(2*dt, len(z))
+        Yn = 1/2 * (-K_prime(z) * dt - np.sqrt(2 * K(z)) * dW + np.sqrt(K_prime(z)**2 * Vn + (-K_prime(z) * dt - np.sqrt(2 * K(z)) * dW)**2))
+        z_temp = np.where(Yn - z >= 0, z_temp + Yn - z, z_temp)
+        z_temp = np.where(z_temp > L, 2 * L - z_temp, z_temp)
+    #Check that all particles are within permitted range
+    assert (z_temp.all() >= 0 && z_temp.all() <= L)
     return z_temp
 
+
 #Function to preform a number of random steps on all particles
-def random_walk(Np, T, dt, K, K_prime, L):
+def random_walk(Np, T, dt, K, K_prime, L, simple = True):
     Nt = int(np.floor(T / dt))
 
     print(f"{Nt = }, {Np = }")
@@ -41,12 +51,12 @@ def random_walk(Np, T, dt, K, K_prime, L):
     z0 = rand.uniform(0, L, Np)
     Zs[0] = z0
     for i in range(Nt - 1):
-        Zs[i+1] = random_step(Zs[i], dt, K, K_prime, L)
+        Zs[i+1] = random_step(Zs[i], dt, K, K_prime, L, simple)
     return Zs
 
 
 
-Np = int(10**6) #Number of particles
+Np = int(1e5) #Number of particles
 T = 6 * 3600 #Total time
 L = 2 #Total depth
 bins = 200 #Number of bins in histogram
@@ -63,7 +73,7 @@ C50 = hist50[0] / (np.sum(hist50[0]) * (depth[1] - depth[0]))
 
 #Random walk performed with steplenght dt = 10
 dt = 10
-Z10 = random_walk(Np, T, dt, K_func, K_func_prime, 2)
+Z10 = random_walk(Np, T, dt, K_func, K_func_prime, 2, False)
 
 hist10 = np.histogram(Z10, bins, (0, L))
 C10 = hist10[0] / (np.sum(hist10[0]) * (depth[1] - depth[0]))

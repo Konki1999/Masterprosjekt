@@ -8,16 +8,21 @@ buffer = 0.1
 filenames = sys.argv[1:]
 L = 0
 
+reflection_set = set()
+timestep_set = set()
+
 for filename in filenames:
     #Get metadata
     vars = filename.split('_')
     reflection = vars[1]
+    reflection_set.add(reflection)
     timestep = vars[2]
+    timestep_set.add(timestep)
     particles = vars[3]
     time = vars[4]
     L = float(vars[5])
 
-    #create label from metadata
+    #Create label from metadata
     lab = reflection + ", dt=" + timestep + ", Np=" + particles
 
     #Load data
@@ -31,10 +36,18 @@ for filename in filenames:
     plt.plot(C, depth, label=lab)
 
 
+out_filename = ""
+for ref in reflection_set:
+    out_filename += ref
+out_filename += "_"
+for step in timestep_set:
+    out_filename += step
+out_filename += ".png"
+
 plt.ylim(L + buffer, -buffer)
 plt.xlim(0.4, 0.6)
 plt.xlabel("Concentration")
 plt.grid()
 plt.legend()
 
-plt.savefig("plot.png")
+plt.savefig(out_filename)

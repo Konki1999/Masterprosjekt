@@ -23,9 +23,9 @@ def K_const_prime(z):
     return 0
 
 #Function for performing a single random step on all particles
-def random_step(z, dt, K, K_prime, L, simple = True):
+def random_step(z, dt, a, b, L, simple = True):
     dW = rand.normal(0, np.sqrt(dt), len(z))
-    z_temp = z + K_prime(z) * dt + np.sqrt(2 * K(z)) * dW
+    z_temp = z + a(z) * dt + b(z) * dW
     #Simple reflection scheme
     if simple:
         z_temp = np.where(z_temp < 0, -z_temp, z_temp)
@@ -33,7 +33,7 @@ def random_step(z, dt, K, K_prime, L, simple = True):
     #Lépingle reflection
     else:
         Vn = rand.exponential(2*dt, len(z))
-        Yn = 1/2 * (-K_prime(z) * dt - np.sqrt(2 * K(z)) * dW + np.sqrt(K_prime(z)**2 * Vn + (-K_prime(z) * dt - np.sqrt(2 * K(z)) * dW)**2))
+        Yn = 1/2 * (-a(z) * dt - b(z) * dW + np.sqrt(b(z)**2 * Vn + (-a(z) * dt - b(z) * dW)**2))
         z_temp = np.where(Yn - z >= 0, z_temp + Yn - z, z_temp)
         z_temp = np.where(z_temp > L, 2 * L - z_temp, z_temp)
     #Check that all particles are within permitted range
@@ -50,18 +50,21 @@ def random_walk(Np, T, dt, K, K_prime, L, simple = True):
     Zs = np.zeros((Nt, Np))
     z0 = rand.uniform(0, L, Np)
     Zs[0] = z0
+
+    a = lambda z : K_prime(z)
+    b = lambda z : sqrt(2 * K(z))
+
     for i in range(Nt - 1):
-        Zs[i+1] = random_step(Zs[i], dt, K, K_prime, L, simple)
+        Zs[i+1] = random_step(Zs[i], dt, a, b, L, simple)
     return Zs
 
 
-
+"""
 Np = int(1e4) #Number of particles
 T = 6 * 3600 #Total time
 L = 2 #Total depth
 bins = 200 #Number of bins in histogram
 
-"""
 #Random walk performed with steplenght dt = 50
 dt = 50
 Z50 = random_walk(Np, T, dt, K_func, K_func_prime, L, False)

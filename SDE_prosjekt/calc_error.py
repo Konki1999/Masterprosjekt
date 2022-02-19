@@ -19,7 +19,7 @@ for i, dt in enumerate(dts):
         res_s = np.load(filename_s)
     print(filename_s)
 
-    mean_list[0,i] = np.mean(res_s, axis=1)
+    mean_list[0,i] = np.mean(res_s)
 
     filename_l = f"results_l_{dt}_{Np}_{T/3600}_{L}_.npy"
     if not os.path.exists(filename_l):

@@ -39,19 +39,17 @@ for i, dt in enumerate(dts):
 
 error_list = np.abs(mean_list - L/2)
 
-A = np.vstack([np.log10(dts), np.ones(len(dts))]).T
-print(A)
-ms, cs = np.linalg.lstsq(A, np.log10(error_list[0]), rcond=None)[0]
-ml, cl = np.linalg.lstsq(A, np.log10(error_list[1]), rcond=None)[0]
+poly_s = np.polyfit(np.log10(dts), np.log10(error_list[0]), 1)
+poly_l = np.polyfit(np.log10(dts), np.log10(error_list[1]), 1)
 
-print(f"{ms = }")
-print(f"{ml = }")
+print(f"{poly_s[0] = }")
+print(f"{poly_l[0] = }")
 
 plt.scatter(dts, error_list[0], c='r', label = "Simple")
-plt.plot(dts, np.power(10, cs) * np.power(dts, ms), 'r', label = f"$\sim\Delta t^{{{ms:.2f}}}$")
+plt.plot(dts, np.power(10, poly_s[1]) * np.power(dts, poly_s[0]), 'r', label = f"$\sim\Delta t^{{{poly_s[0]:.2f}}}$")
 
 plt.scatter(dts, error_list[1], c='b', label = "Lépingle")
-plt.plot(dts, np.power(10, cl) * np.power(dts, ml), 'b', label = f"$\sim\Delta t^{{{ml:.2f}}}$")
+plt.plot(dts, np.power(10, poly_l[1]) * np.power(dts, poly_l[0]), 'b', label = f"$\sim\Delta t^{{{poly_l[0]:.2f}}}$")
 
 plt.grid(color="grey", linestyle='--')
 

@@ -12,7 +12,7 @@ dt = 30
 Np = int(1e6)
 T = 3600 * 6
 L = 2
-save_interval = 200 #Save interval in seconds
+save_interval =  #Save interval in seconds
 num_saves = int(np.floor(T / ( save_interval)))
 
 MPI.Init()

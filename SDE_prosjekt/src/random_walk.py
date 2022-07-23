@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import random as rand
+import os
 
 #Constants of diffusivity
 K0 = 2 * 10**(-4)
@@ -43,16 +44,18 @@ def random_step(z, dt, a, b, L, simple = True):
 
 
 #Function to preform a number of random steps on all particles
-def random_walk(Np, T, dt, K, K_prime, L, simple = True, save_interval = 1):
+def random_walk(Np, T, dt, K, K_prime, L, simple = True, save_interval = 1, rank = 0, full=True, savedir="noslurm"):
     next_save = save_interval
     Nt = int(np.floor(T / dt))
     save_num = int(np.floor(T / save_interval))
 
-    save_index = 1
-
-    Zs = np.zeros((save_num, Np))
+    save_index = 0
     z = rand.uniform(0, L, Np)
-    Zs[0] = z
+    if full:
+        Zs = np.zeros((save_num, Np))
+        Zs[0] = z
+    else:
+        Zs = z
 
     a = lambda z : K_prime(z)
     b = lambda z : np.sqrt(2 * K(z))
@@ -60,7 +63,16 @@ def random_walk(Np, T, dt, K, K_prime, L, simple = True, save_interval = 1):
     for i in range(Nt - 1):
         z = random_step(z, dt, a, b, L, simple)
         if i*dt >= next_save:
-            Zs[save_index] = z
+            if full:
+                Zs[save_index] = z
+            else:
+                save_name = "step_result_" + str(save_index) + "_" + str(rank)
+                if simple:
+                    save_name += "_s_"
+                else:
+                    save_name += "_l_"
+                np.save(os.path.join(savedir, save_name), z)
+                Zs = z
             next_save += save_interval
             save_index += 1
-    return Zs
+    return Zs, save_index

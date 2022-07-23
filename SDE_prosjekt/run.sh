@@ -48,7 +48,7 @@ cp ${SLURM_SUBMIT_DIR}/main.py ${SCRATCH_DIRECTORY}
 # This is where the actual work is done. In this case, the script only waits.
 # The time command is optional, but it may give you a hint on how long the
 # command worked
-python3 main.py
+python3 calc_error.py
 
 # After the job is done we copy our output back to $SLURM_SUBMIT_DIR
 cp ${SCRATCH_DIRECTORY}/*.npy ${SLURM_SUBMIT_DIR}
